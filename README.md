@@ -1,6 +1,6 @@
 # dynamic
 Dynamic variable type for C++ allow you to store and dynamically cast various types of data.
-
+STL-based, requires c++11.
 ```c++
 dynamic var = 10;
 
