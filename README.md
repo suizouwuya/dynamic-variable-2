@@ -10,3 +10,26 @@ std::string str = var;
 var = "string value";
 ...
 ```
+# dynamic_factory
+Create new instances of class by it's name.
+
+```c++
+//! Define base class
+class BaseClass {};
+
+//! Define any subclasses
+class PluginOne : public BaseClass {}
+class PluginTwo : public BaseClass {}
+
+//! Create dynamic factory
+dynamic_factory<BaseClass>  factory;
+
+//! Register classes in factory
+factory.RegisterClass<PluginOne>("plugin one");
+factory.RegisterClass<PluginTwo>("plugin two");
+
+//! Now you can create new instances of registered classes
+BaseClass* a = factory.CreateInstance("plugin one");
+BaseClass* b = factory.CreateInstance("plugin two");
+
+```
