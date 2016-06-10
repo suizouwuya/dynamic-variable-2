@@ -386,8 +386,8 @@ private:
         switch (size()) {
           case sizeof(std::uint8_t):    return *reinterpret_cast<const std::uint8_t*>(data());
           case sizeof(std::uint16_t):   return *reinterpret_cast<const std::uint16_t*>(data());
-          case sizeof(std::uint32_t):   return *reinterpret_cast<const std::uint16_t*>(data());
-          case sizeof(std::uint64_t):   return *reinterpret_cast<const std::uint16_t*>(data());
+          case sizeof(std::uint32_t):   return *reinterpret_cast<const std::uint32_t*>(data());
+          case sizeof(std::uint64_t):   return *reinterpret_cast<const std::uint64_t*>(data());
           default: throw std::bad_cast();
         }
       }; break;
