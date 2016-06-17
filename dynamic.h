@@ -315,10 +315,22 @@ public:
     return value().data();
   }
 
+  //! Access raw data buffer
+  std::uint8_t * data() {
+    return &value_rw()[0];
+  }
+
   //! Access raw data
   const std::vector<std::uint8_t> & value() const {
     return _Value;
   }
+
+  //! Access raw data
+  std::vector<std::uint8_t> & value() {
+    return _Value;
+  }
+
+
 
   //! Clear value
   void clear() {
@@ -348,13 +360,14 @@ public:
   static Type getMajorType(const dynamic & T0, const dynamic & T1) {
     return Type::Undefined;
   }
-private:
+
   //! Resize container to fit new size
   void resize(std::size_t NewSize) {
     value_rw().resize(NewSize);
     if (value().capacity() > NewSize) std::vector<std::uint8_t>().swap(value_rw());
   }
 
+private:
   //! Init function
   void __init__() {
     setType(Type::Undefined);
@@ -424,6 +437,7 @@ private:
     setType(StoredType);
   }
 
+public:
   //! Set type
   void setType(Type StoredType) {
     _StoredType = StoredType;
