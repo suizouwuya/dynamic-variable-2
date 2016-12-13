@@ -48,6 +48,7 @@ public:
   dynamic(double Value) {__init__(); *this = Value;}
 
   dynamic(const char * Value)                       {__init__(); *this = Value;}
+  dynamic(const char * Value, std::size_t Size)     {__init__(); *this = std::string(Value, Size);}
   dynamic(const std::string & Value)                {__init__(); *this = Value;}
   dynamic(const std::vector<std::uint8_t> & Value)  {__init__(); *this = Value;}
   dynamic(const   dynamic & Value)                  {__init__(); *this = Value;}
