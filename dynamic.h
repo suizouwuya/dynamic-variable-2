@@ -1,3 +1,8 @@
+/*
+ * DYNAMIC is C++ implementation for dynamic type
+ *
+ *
+ */
 #pragma once
 #include <cstdint>
 #include <cstring>
@@ -7,6 +12,12 @@
 #include <list>
 #include <vector>
 #include <mutex>
+#define __WITH_DYNAMIC_TYPE__
+
+// - Autodetect UUIDPP capability
+#ifdef __WITH_UUIDPP__
+  #define __DYNAMIC__WITH_UUIDPP__
+#endif
 
 /**
  * @author Andrey Bezborodov <andrey@wavecon.ru>
@@ -28,6 +39,12 @@ public:
     String,
     //! Binary data
     Binary,
+
+  #ifdef __DYNAMIC__WITH_UUIDPP__
+    //! UUID
+    UUID,
+  #endif
+
   };
 public:
 
@@ -51,8 +68,11 @@ public:
   dynamic(const char * Value, std::size_t Size)     {__init__(); *this = std::string(Value, Size);}
   dynamic(const std::string & Value)                {__init__(); *this = Value;}
   dynamic(const std::vector<std::uint8_t> & Value)  {__init__(); *this = Value;}
-  dynamic(const   dynamic & Value)                  {__init__(); *this = Value;}
+  dynamic(const dynamic & Value)                    {__init__(); *this = Value;}
 
+#ifdef __DYNAMIC__WITH_UUIDPP__
+  dynamic(const UUID& Value)                        {__init__(); *this = Value;}
+#endif
 
 public:
   void operator = (std::int8_t Value)   {storeNumeric<std::int8_t>(Value, Type::SignedInt);}
@@ -87,11 +107,19 @@ public:
     copy(Value.begin(), Value.end(), value_rw().begin());
     setType(Type::Binary);
   }
-  void operator = (const   dynamic & Value) {
+  void operator = (const dynamic & Value) {
     resize(Value.size());
     std::copy(Value.value().begin(), Value.value().end(), value_rw().begin());
     _StoredType = Value._StoredType;
   }
+
+#ifdef __DYNAMIC__WITH_UUIDPP__
+  void operator = (const UUID & Value) {
+    resize(UUID::binary_size());
+    Value.copyTo(&value_rw()[0]);
+    setType(Type::UUID);
+  }
+#endif
 
 public:
   operator std::int8_t()  const   {return asNumeric<std::int8_t>();}
@@ -113,7 +141,10 @@ public:
         if (      Value == "true"   || Value == "yes" || Value == "1" || Value == "on"   || Value == "enabled"  ) return true;
         else if ( Value == "false"  || Value == "no"  || Value == "0" || Value == "off"  || Value == "disabled" ) return false;
         else throw std::bad_cast();
-      }
+      }; break;
+      #ifdef __DYNAMIC__WITH_UUIDPP__
+      case Type::UUID: return UUID(value().data());
+      #endif
       default: throw std::bad_cast();
     }
   }
@@ -151,6 +182,11 @@ public:
         std::copy(value().begin(), value().end(), Result.begin());
         return Result;
       }
+      #ifdef __DYNAMIC__WITH_UUIDPP__
+      case Type::UUID: {
+        return UUID::toString(value().data());
+      };
+      #endif
       default: throw std::bad_cast();
     }
   }
@@ -158,6 +194,20 @@ public:
     return value();
   }
 
+  #ifdef __DYNAMIC__WITH_UUIDPP__
+  operator UUID () const {
+    // - Convert from binary data
+    if (size() == UUID::binary_size()) return std::move(UUID(value().data()));
+
+    // - Convert from string representation
+    if (size() == UUID::string_size()) return std::move(UUID(cast<std::string>()));
+
+    // - Unable to cast to UUID
+    throw std::bad_cast();
+  }
+  #endif
+
+  //! Cast to specified type
   template <typename T>
   T cast() const {
     return static_cast<T>(*this);
@@ -214,6 +264,7 @@ public:
         throw std::bad_cast();
     }
   }
+
 
 public:
   bool operator != (std::int8_t Second) const     {return Second != cast<std::int8_t>();}
@@ -295,9 +346,15 @@ public:
       case Type::String: {
 
       }
+
       case Type::Binary: {
 
       }
+      #ifdef __DYNAMIC__WITH_UUIDPP__
+      case Type::UUID: {
+
+      }
+      #endif
     }
   }
 
@@ -330,8 +387,6 @@ public:
   std::vector<std::uint8_t> & value() {
     return _Value;
   }
-
-
 
   //! Clear value
   void clear() {
@@ -420,6 +475,9 @@ private:
         return Result;
       }; break;
       // --- Cast from binary data
+      #ifdef __DYNAMIC__WITH_UUIDPP__
+      case Type::UUID:
+      #endif
       case Type::Binary: {
         if (size() > sizeof(T)) throw std::bad_cast();
         T Result = 0;
