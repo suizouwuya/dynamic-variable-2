@@ -469,10 +469,26 @@ private:
       }; break;
       // --- Cast from string
       case Type::String: {
-        std::istringstream iss(std::string(reinterpret_cast<const char*>(data()), size()));
-        T Result = 0;
-        iss >> Result;
-        return Result;
+        std::string src(reinterpret_cast<const char*>(data()), size());
+        switch (sizeof(T)) {
+          case 1:
+          case 2:
+          case 4: {
+            std::int32_t Result = 0;
+            sscanf(src.c_str(), "%d", &Result);
+            return static_cast<T>(Result);
+          }; break;
+          case 8: {
+            std::int64_t Result = 0;
+            sscanf(src.c_str(), "%ld", &Result);
+            return static_cast<T>(Result);
+          }; break;
+        }
+
+        //std::istringstream iss(std::string(reinterpret_cast<const char*>(data()), size()));
+        //T Result = 0;
+        //iss >> Result;
+        //return Result;
       }; break;
       // --- Cast from binary data
       #ifdef __DYNAMIC__WITH_UUIDPP__
